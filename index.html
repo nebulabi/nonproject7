@@ -1,0 +1,2134 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐔 ChickenBlox</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323:wght@400&display=swap');
+
+  :root {
+    --bg: #0a0a1a;
+    --panel: #12122a;
+    --accent: #f6c90e;
+    --accent2: #ff6b35;
+    --green: #4ade80;
+    --red: #f87171;
+    --blue: #60a5fa;
+    --purple: #c084fc;
+    --border: #2a2a4a;
+    --text: #e0e0ff;
+    --pixel: 2px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; image-rendering: pixelated; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'VT323', monospace;
+    font-size: 20px;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  /* ===== SCREENS ===== */
+  .screen { display: none; width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
+  .screen.active { display: flex; }
+
+  /* ===== AUTH SCREEN ===== */
+  #auth-screen {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(ellipse at center, #1a1a3e 0%, #0a0a1a 70%);
+  }
+
+  .auth-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 32px;
+    color: var(--accent);
+    text-shadow: 0 0 20px #f6c90e88, 4px 4px 0 #8a6f00;
+    margin-bottom: 8px;
+    animation: flicker 3s infinite;
+  }
+
+  .auth-subtitle {
+    color: var(--accent2);
+    font-size: 24px;
+    margin-bottom: 40px;
+    letter-spacing: 4px;
+  }
+
+  @keyframes flicker {
+    0%,90%,94%,100% { opacity:1; }
+    92%,96% { opacity:0.7; }
+  }
+
+  .auth-box {
+    background: var(--panel);
+    border: 3px solid var(--accent);
+    padding: 32px;
+    width: 380px;
+    box-shadow: 0 0 30px #f6c90e33, inset 0 0 20px #00000055;
+  }
+
+  .auth-tabs {
+    display: flex;
+    margin-bottom: 24px;
+    border-bottom: 2px solid var(--border);
+  }
+
+  .auth-tab {
+    flex: 1;
+    padding: 10px;
+    background: none;
+    border: none;
+    color: #888;
+    font-family: 'VT323', monospace;
+    font-size: 22px;
+    cursor: pointer;
+    letter-spacing: 2px;
+    transition: color 0.2s;
+  }
+
+  .auth-tab.active {
+    color: var(--accent);
+    border-bottom: 2px solid var(--accent);
+    margin-bottom: -2px;
+  }
+
+  .form-group { margin-bottom: 16px; }
+
+  .form-group label {
+    display: block;
+    color: #aaa;
+    font-size: 16px;
+    margin-bottom: 4px;
+    letter-spacing: 2px;
+  }
+
+  .form-group input {
+    width: 100%;
+    background: #08081a;
+    border: 2px solid var(--border);
+    color: var(--text);
+    font-family: 'VT323', monospace;
+    font-size: 22px;
+    padding: 8px 12px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .form-group input:focus { border-color: var(--accent); }
+
+  .btn {
+    width: 100%;
+    padding: 12px;
+    background: var(--accent);
+    border: none;
+    color: #000;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 13px;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: transform 0.1s, box-shadow 0.1s;
+    box-shadow: 0 4px 0 #8a6f00;
+  }
+
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 0 #8a6f00; }
+  .btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #8a6f00; }
+
+  .btn.btn-secondary {
+    background: var(--panel);
+    color: var(--accent);
+    border: 2px solid var(--accent);
+    box-shadow: 0 4px 0 #8a6f0066;
+  }
+
+  .auth-error {
+    color: var(--red);
+    font-size: 16px;
+    margin-top: 12px;
+    min-height: 20px;
+    text-align: center;
+  }
+
+  /* ===== LOBBY SCREEN ===== */
+  #lobby-screen {
+    flex-direction: column;
+    background: radial-gradient(ellipse at top, #1a1a3e 0%, #0a0a1a 60%);
+  }
+
+  .lobby-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    background: var(--panel);
+    border-bottom: 3px solid var(--accent);
+  }
+
+  .lobby-logo {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 18px;
+    color: var(--accent);
+  }
+
+  .player-info {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .player-name { color: var(--green); font-size: 22px; }
+
+  .currency {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--accent);
+    font-size: 22px;
+  }
+
+  .lobby-body {
+    display: flex;
+    flex: 1;
+    gap: 0;
+    overflow: hidden;
+  }
+
+  .lobby-rooms {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+  }
+
+  .lobby-sidebar {
+    width: 280px;
+    background: var(--panel);
+    border-left: 3px solid var(--border);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .section-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    margin-bottom: 12px;
+    letter-spacing: 1px;
+  }
+
+  .rooms-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+  }
+
+  .room-card {
+    background: var(--panel);
+    border: 2px solid var(--border);
+    padding: 16px;
+    cursor: pointer;
+    transition: border-color 0.2s, transform 0.1s;
+    position: relative;
+  }
+
+  .room-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+
+  .room-mode {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    color: var(--accent2);
+    margin-bottom: 8px;
+  }
+
+  .room-name { font-size: 22px; color: var(--text); margin-bottom: 6px; }
+
+  .room-players {
+    font-size: 16px;
+    color: #888;
+  }
+
+  .room-status {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 13px;
+    padding: 2px 8px;
+  }
+
+  .room-status.waiting { color: var(--green); border: 1px solid var(--green); }
+  .room-status.full { color: var(--red); border: 1px solid var(--red); }
+
+  .create-room-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .mode-select {
+    background: #08081a;
+    border: 2px solid var(--border);
+    color: var(--text);
+    font-family: 'VT323', monospace;
+    font-size: 20px;
+    padding: 6px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  .mode-select:focus { border-color: var(--accent); }
+
+  /* ===== CUSTOMIZATION ===== */
+  .customize-area {
+    margin-top: 12px;
+  }
+
+  .skin-picker {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .skin-opt {
+    aspect-ratio: 1;
+    background: #08081a;
+    border: 2px solid var(--border);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    transition: border-color 0.2s;
+  }
+
+  .skin-opt:hover, .skin-opt.active { border-color: var(--accent); }
+
+  /* ===== WAITING ROOM ===== */
+  #waiting-screen {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(ellipse, #1a1a3e, #0a0a1a);
+  }
+
+  .waiting-box {
+    background: var(--panel);
+    border: 3px solid var(--accent);
+    padding: 32px;
+    width: 500px;
+    text-align: center;
+  }
+
+  .waiting-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 14px;
+    color: var(--accent);
+    margin-bottom: 24px;
+  }
+
+  .waiting-players {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 24px;
+    min-height: 120px;
+  }
+
+  .waiting-player {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    background: #08081a;
+    border: 1px solid var(--border);
+  }
+
+  .waiting-player .ready { color: var(--green); }
+  .waiting-player .not-ready { color: var(--red); }
+
+  .waiting-slot {
+    border: 1px dashed var(--border);
+    padding: 10px;
+    color: #444;
+    text-align: center;
+    font-size: 16px;
+  }
+
+  .countdown {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 48px;
+    color: var(--accent);
+    min-height: 60px;
+    text-shadow: 0 0 20px #f6c90e;
+  }
+
+  /* ===== GAME SCREEN ===== */
+  #game-screen {
+    flex-direction: column;
+    background: #000;
+  }
+
+  .game-hud {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 16px;
+    background: rgba(10,10,26,0.9);
+    border-bottom: 2px solid var(--accent);
+    z-index: 10;
+    height: 44px;
+  }
+
+  .hud-mode {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    color: var(--accent2);
+  }
+
+  .hud-players {
+    display: flex;
+    gap: 16px;
+  }
+
+  .hud-player {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 18px;
+  }
+
+  .hud-hp {
+    display: flex;
+    gap: 2px;
+  }
+
+  .hp-dot {
+    width: 10px;
+    height: 10px;
+    background: var(--red);
+    display: inline-block;
+  }
+
+  .hp-dot.empty { background: #333; }
+
+  .hud-timer {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 16px;
+    color: var(--accent);
+  }
+
+  #game-canvas {
+    flex: 1;
+    display: block;
+    cursor: crosshair;
+  }
+
+  .game-overlay {
+    position: absolute;
+    top: 44px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 20;
+  }
+
+  .objective-banner {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    background: rgba(10,10,26,0.85);
+    border: 2px solid var(--accent);
+    padding: 12px 24px;
+    text-align: center;
+    animation: slideDown 0.4s ease;
+  }
+
+  @keyframes slideDown {
+    from { transform: translateY(-40px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  /* ===== RESULTS SCREEN ===== */
+  #result-screen {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(ellipse, #1a2a1a, #0a0a0a);
+  }
+
+  .result-box {
+    background: var(--panel);
+    border: 3px solid var(--green);
+    padding: 40px;
+    width: 480px;
+    text-align: center;
+  }
+
+  .result-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 24px;
+    color: var(--green);
+    margin-bottom: 8px;
+    text-shadow: 0 0 20px #4ade80;
+  }
+
+  .result-subtitle { color: #888; font-size: 18px; margin-bottom: 24px; }
+
+  .result-players {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+
+  .result-player {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: #08081a;
+    border: 1px solid var(--border);
+  }
+
+  .result-player.winner { border-color: var(--accent); background: #1a1800; }
+  .result-player .rank { font-family: 'Press Start 2P', monospace; font-size: 10px; color: var(--accent); }
+
+  .result-reward { color: var(--accent); font-size: 20px; }
+
+  /* ===== MOBILE CONTROLS ===== */
+  #mobile-controls {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    z-index: 30;
+    pointer-events: none;
+  }
+
+  .joystick-zone {
+    position: fixed;
+    bottom: 30px;
+    left: 30px;
+    width: 120px;
+    height: 120px;
+    pointer-events: all;
+  }
+
+  .joystick-bg {
+    width: 120px;
+    height: 120px;
+    background: rgba(255,255,255,0.1);
+    border: 2px solid rgba(255,255,255,0.2);
+    border-radius: 50%;
+    position: relative;
+  }
+
+  .joystick-thumb {
+    width: 50px;
+    height: 50px;
+    background: rgba(246,201,14,0.7);
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transition: transform 0.05s;
+  }
+
+  .action-buttons {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    display: flex;
+    gap: 12px;
+    pointer-events: all;
+  }
+
+  .action-btn {
+    width: 64px;
+    height: 64px;
+    background: rgba(246,201,14,0.3);
+    border: 2px solid rgba(246,201,14,0.6);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  @media (pointer: coarse) {
+    #mobile-controls { display: block; }
+    #game-canvas { cursor: default; }
+  }
+
+  /* ===== CHAT ===== */
+  .chat-box {
+    position: fixed;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 400px;
+    z-index: 25;
+    display: none;
+  }
+
+  .chat-box.open { display: flex; flex-direction: column; }
+
+  .chat-messages {
+    background: rgba(10,10,26,0.8);
+    max-height: 120px;
+    overflow-y: auto;
+    padding: 6px;
+    font-size: 16px;
+  }
+
+  .chat-input-row {
+    display: flex;
+  }
+
+  .chat-input {
+    flex: 1;
+    background: #08081a;
+    border: 1px solid var(--accent);
+    color: var(--text);
+    font-family: 'VT323', monospace;
+    font-size: 18px;
+    padding: 4px 8px;
+    outline: none;
+  }
+
+  /* ===== SCROLLBAR ===== */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #08081a; }
+  ::-webkit-scrollbar-thumb { background: var(--border); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+  /* ===== MINI GAME SPECIFIC ===== */
+  .boss-indicator {
+    position: fixed;
+    top: 54px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    color: var(--red);
+    background: rgba(10,10,26,0.9);
+    padding: 6px 16px;
+    border: 2px solid var(--red);
+    z-index: 15;
+    display: none;
+  }
+
+  .toast {
+    position: fixed;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--panel);
+    border: 2px solid var(--accent);
+    color: var(--accent);
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    padding: 10px 20px;
+    z-index: 100;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  .toast.show { opacity: 1; }
+
+  /* Loading */
+  .loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 20px auto;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- BOSS INDICATOR -->
+<div class="boss-indicator" id="boss-indicator">⚠ ВЫ — БОСС ⚠</div>
+
+<!-- ===== AUTH SCREEN ===== -->
+<div class="screen active" id="auth-screen">
+  <div>
+    <div class="auth-title">🐔 CHICKENBLOX</div>
+    <div class="auth-subtitle">ОНЛАЙН МИНИ-ИГРЫ</div>
+    <div class="auth-box">
+      <div class="auth-tabs">
+        <button class="auth-tab active" onclick="switchTab('login')">ВОЙТИ</button>
+        <button class="auth-tab" onclick="switchTab('register')">РЕГИСТРАЦИЯ</button>
+      </div>
+      <div id="login-form">
+        <div class="form-group"><label>EMAIL</label><input type="email" id="login-email" placeholder="chicken@farm.ru"></div>
+        <div class="form-group"><label>ПАРОЛЬ</label><input type="password" id="login-pass" placeholder="••••••••"></div>
+        <button class="btn" onclick="doLogin()">ВОЙТИ В КУРЯТНИК</button>
+      </div>
+      <div id="register-form" style="display:none">
+        <div class="form-group"><label>НИКНЕЙМ</label><input type="text" id="reg-name" placeholder="ChickenHero" maxlength="16"></div>
+        <div class="form-group"><label>EMAIL</label><input type="email" id="reg-email" placeholder="chicken@farm.ru"></div>
+        <div class="form-group"><label>ПАРОЛЬ</label><input type="password" id="reg-pass" placeholder="••••••••"></div>
+        <button class="btn" onclick="doRegister()">СОЗДАТЬ КУРИЦУ</button>
+      </div>
+      <div class="auth-error" id="auth-error"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== LOBBY SCREEN ===== -->
+<div class="screen" id="lobby-screen">
+  <div class="lobby-header">
+    <div class="lobby-logo">🐔 CHICKENBLOX</div>
+    <div class="player-info">
+      <span class="player-name" id="header-name">ChickenHero</span>
+      <span class="currency">🪙 <span id="header-coins">0</span></span>
+      <button class="btn btn-secondary" style="width:auto;padding:6px 16px;font-size:10px" onclick="doLogout()">ВЫХОД</button>
+    </div>
+  </div>
+  <div class="lobby-body">
+    <div class="lobby-rooms">
+      <div class="section-title">ОТКРЫТЫЕ КОМНАТЫ</div>
+      <div class="rooms-grid" id="rooms-grid">
+        <div style="color:#444;font-size:18px;padding:20px">Загрузка комнат...</div>
+      </div>
+    </div>
+    <div class="lobby-sidebar">
+      <div class="section-title">СОЗДАТЬ КОМНАТУ</div>
+      <div class="create-room-form">
+        <div class="form-group"><label>НАЗВАНИЕ</label><input type="text" id="room-name-input" placeholder="Мой курятник" maxlength="20"></div>
+        <div class="form-group"><label>МИНИ-ИГРА</label>
+          <select class="mode-select" id="room-mode-select">
+            <option value="hide_seek">🙈 Прятки</option>
+            <option value="boss_battle">💥 Босс vs Куры</option>
+            <option value="tag">🏃 Догонялки</option>
+            <option value="blindfold">🙈 Жмурки</option>
+            <option value="deathmatch">⚔️ Дезматч</option>
+          </select>
+        </div>
+        <div class="form-group"><label>МАКС ИГРОКОВ</label>
+          <select class="mode-select" id="room-max-players">
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4" selected>4</option>
+          </select>
+        </div>
+        <button class="btn" onclick="createRoom()">СОЗДАТЬ</button>
+      </div>
+
+      <div class="section-title" style="margin-top:16px">МОЯ КУРИЦА</div>
+      <div class="customize-area">
+        <div style="font-size:16px;color:#888;margin-bottom:6px">СКИН</div>
+        <div class="skin-picker" id="skin-picker"></div>
+        <div style="font-size:16px;color:#888;margin-top:12px;margin-bottom:6px">ЦВЕТㅤ</div>
+        <div class="skin-picker" id="color-picker"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== WAITING SCREEN ===== -->
+<div class="screen" id="waiting-screen">
+  <div class="waiting-box">
+    <div class="waiting-title" id="waiting-mode-title">ПРЯТКИ</div>
+    <div style="font-size:18px;color:#888;margin-bottom:16px" id="waiting-room-name">Комната: Мой курятник</div>
+    <div class="waiting-players" id="waiting-players-list"></div>
+    <div class="countdown" id="countdown-display"></div>
+    <button class="btn btn-secondary" style="margin-top:16px" onclick="leaveRoom()">← ВЫЙТИ</button>
+  </div>
+</div>
+
+<!-- ===== GAME SCREEN ===== -->
+<div class="screen" id="game-screen">
+  <div class="game-hud">
+    <div class="hud-mode" id="hud-mode">ПРЯТКИ</div>
+    <div class="hud-players" id="hud-players"></div>
+    <div class="hud-timer" id="hud-timer">02:00</div>
+  </div>
+  <canvas id="game-canvas"></canvas>
+  <div class="game-overlay">
+    <div class="objective-banner" id="objective-banner" style="display:none"></div>
+  </div>
+  <!-- Chat -->
+  <div class="chat-box" id="chat-box">
+    <div class="chat-messages" id="chat-messages"></div>
+    <div class="chat-input-row">
+      <input class="chat-input" id="chat-input" placeholder="Написать..." maxlength="80" onkeydown="sendChatKey(event)">
+    </div>
+  </div>
+</div>
+
+<!-- ===== RESULT SCREEN ===== -->
+<div class="screen" id="result-screen">
+  <div class="result-box">
+    <div class="result-title" id="result-title">🏆 ПОБЕДА!</div>
+    <div class="result-subtitle" id="result-subtitle">Режим: Прятки</div>
+    <div class="result-players" id="result-players"></div>
+    <div style="color:var(--accent);font-size:20px;margin-bottom:20px">+<span id="result-reward">50</span> 🪙</div>
+    <button class="btn" onclick="goLobby()">В ЛОББИ</button>
+  </div>
+</div>
+
+<!-- ===== MOBILE CONTROLS ===== -->
+<div id="mobile-controls">
+  <div class="joystick-zone" id="joystick-zone">
+    <div class="joystick-bg"><div class="joystick-thumb" id="joystick-thumb"></div></div>
+  </div>
+  <div class="action-buttons">
+    <div class="action-btn" id="btn-action" ontouchstart="mobileAction()">🥚</div>
+    <div class="action-btn" ontouchstart="toggleChat()">💬</div>
+  </div>
+</div>
+
+<!-- ===== FIREBASE SDK ===== -->
+<script type="module">
+// ============================================================
+//  FIREBASE CONFIG — замени на свои данные из консоли Firebase
+// ============================================================
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+         signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getDatabase, ref, set, get, push, onValue, off, update, remove,
+         serverTimestamp, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey:            "AIzaSyC7rEH4UapI_oCuTTSz1H11wfw-VcbCGwQ",
+  authDomain:        "chickenblox.firebaseapp.com",
+  databaseURL:       "https://chickenblox-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId:         "chickenblox",
+  storageBucket:     "chickenblox.firebasestorage.app",
+  messagingSenderId: "313020962856",
+  appId:             "1:313020962856:web:a40ae89f8816717e1c3d1d"
+};
+
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getDatabase(app);
+
+// ============================================================
+//  GAME STATE
+// ============================================================
+const SKINS = ['🐔','🦆','🐣','🦜','🦚','🦩','🐦','🦅'];
+const COLORS= ['#f6c90e','#ff6b35','#4ade80','#60a5fa','#c084fc','#f87171','#fff','#fb923c'];
+const MODES = {
+  hide_seek:   {name:'🙈 Прятки',       duration:120, maxPlayers:4, desc:'Прячьтесь от искателя!'},
+  boss_battle: {name:'💥 Босс vs Куры', duration:180, maxPlayers:4, desc:'3 курицы против 1 Босса!'},
+  tag:         {name:'🏃 Догонялки',    duration:90,  maxPlayers:4, desc:'Не дай себя поймать!'},
+  blindfold:   {name:'😵 Жмурки',      duration:90,  maxPlayers:4, desc:'Водящий не видит!'},
+  deathmatch:  {name:'⚔️ Дезматч',      duration:120, maxPlayers:4, desc:'Последний стоит — победитель!'},
+};
+
+const MAPS = {};   // загружаются из maps/*.json
+const TILE = 32;   // размер тайла в px
+
+let currentUser = null;
+let userData    = null;
+let currentRoom = null;
+let roomRef     = null;
+let gameState   = null;
+let myPlayerId  = null;
+let keys        = {};
+let bullets     = [];
+let particles   = [];
+let gameTimer   = null;
+let rafId       = null;
+let lastTime    = 0;
+let roomListener= null;
+
+const canvas = document.getElementById('game-canvas');
+const ctx    = canvas.getContext('2d');
+
+// ============================================================
+//  AUTH
+// ============================================================
+window.switchTab = (tab) => {
+  document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.auth-tab')[tab==='login'?0:1].classList.add('active');
+  document.getElementById('login-form').style.display   = tab==='login'   ? 'block' : 'none';
+  document.getElementById('register-form').style.display= tab==='register' ? 'block' : 'none';
+};
+
+window.doLogin = async () => {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-pass').value;
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+  } catch(e) { showAuthError(authErrMsg(e.code)); }
+};
+
+window.doRegister = async () => {
+  const name  = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const pass  = document.getElementById('reg-pass').value;
+  if (!name) return showAuthError('Введи никнейм!');
+  if (name.length < 2) return showAuthError('Никнейм слишком короткий!');
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    await set(ref(db, `users/${cred.user.uid}`), {
+      name, email, coins: 100, skin: 0, color: 0,
+      createdAt: serverTimestamp(), gamesPlayed: 0, wins: 0
+    });
+  } catch(e) { showAuthError(authErrMsg(e.code)); }
+};
+
+window.doLogout = async () => {
+  if (currentRoom) await leaveRoom();
+  await signOut(auth);
+};
+
+function authErrMsg(code) {
+  const map = {
+    'auth/email-already-in-use': 'Email уже занят!',
+    'auth/invalid-email':        'Неверный email!',
+    'auth/weak-password':        'Пароль слишком слабый! (мин. 6 символов)',
+    'auth/user-not-found':       'Пользователь не найден!',
+    'auth/wrong-password':       'Неверный пароль!',
+    'auth/invalid-credential':   'Неверный email или пароль!',
+  };
+  return map[code] || 'Ошибка: ' + code;
+}
+
+function showAuthError(msg) {
+  const el = document.getElementById('auth-error');
+  el.textContent = msg;
+  setTimeout(() => el.textContent = '', 4000);
+}
+
+// ============================================================
+//  AUTH STATE
+// ============================================================
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    currentUser  = user;
+    myPlayerId   = user.uid;
+    const snap   = await get(ref(db, `users/${user.uid}`));
+    userData     = snap.val();
+    if (!userData) { await signOut(auth); return; }
+    await loadMaps();
+    showScreen('lobby');
+    setupLobby();
+  } else {
+    currentUser = null;
+    userData    = null;
+    showScreen('auth');
+    stopGame();
+  }
+});
+
+// ============================================================
+//  MAP LOADING
+// ============================================================
+async function loadMaps() {
+  // Загружаем текстуры параллельно с картами
+  const texPromise = loadAllTextures();
+  const mapFiles = ['lobby_map','hide_seek_map','boss_map','tag_map','blindfold_map','deathmatch_map'];
+  for (const name of mapFiles) {
+    try {
+      const r = await fetch(`maps/${name}.json`);
+      if (r.ok) MAPS[name] = await r.json();
+      else MAPS[name] = generateDefaultMap(name);
+    } catch { MAPS[name] = generateDefaultMap(name); }
+  }
+  await texPromise;
+}
+
+function generateDefaultMap(name) {
+  // Генерация карты по умолчанию если JSON не найден
+  const W = 30, H = 22;
+  const tiles = [];
+  for (let y = 0; y < H; y++) {
+    const row = [];
+    for (let x = 0; x < W; x++) {
+      // Стены по периметру
+      if (x===0||y===0||x===W-1||y===H-1) row.push(1);
+      // Случайные блоки-укрытия
+      else if (x%6===3 && y%5===2) row.push(1);
+      else row.push(0);
+    }
+    tiles.push(row);
+  }
+  return { width: W, height: H, tiles,
+    spawnPoints: [{x:2,y:2},{x:W-3,y:2},{x:2,y:H-3},{x:W-3,y:H-3}],
+    name, tileSize: TILE };
+}
+
+// ============================================================
+//  LOBBY
+// ============================================================
+function setupLobby() {
+  document.getElementById('header-name').textContent  = userData.name;
+  document.getElementById('header-coins').textContent = userData.coins || 0;
+  setupSkinPicker();
+  listenRooms();
+}
+
+function setupSkinPicker() {
+  const sp = document.getElementById('skin-picker');
+  const cp = document.getElementById('color-picker');
+
+  sp.innerHTML = CHICKEN_SKINS.map((s, i) => {
+    const tex = TEX[s.file];
+    const active = i === (userData.skin || 0);
+    if (tex) {
+      // Рисуем превью на маленьком canvas
+      const cv = document.createElement('canvas');
+      cv.width = cv.height = 40;
+      const c = cv.getContext('2d');
+      c.imageSmoothingEnabled = false;
+      c.drawImage(tex, 0, 0, 40, 40);
+      return `<div class="skin-opt${active?' active':''}" onclick="setSkin(${i})" title="${s.name}">
+        <img src="${cv.toDataURL()}" width="32" height="32" style="image-rendering:pixelated">
+      </div>`;
+    }
+    return `<div class="skin-opt${active?' active':''}" onclick="setSkin(${i})">${s.name[0]}</div>`;
+  }).join('');
+
+  cp.innerHTML = '';  // цвет больше не нужен — скин определяет вид
+}
+
+window.setSkin = async (i) => {
+  userData.skin = i;
+  await update(ref(db, `users/${currentUser.uid}`), { skin: i });
+  setupSkinPicker();
+};
+
+window.setColor = async (i) => {
+  userData.color = i;
+  await update(ref(db, `users/${currentUser.uid}`), { color: i });
+  setupSkinPicker();
+};
+
+function listenRooms() {
+  const roomsRef = ref(db, 'rooms');
+  if (roomListener) off(roomsRef, 'value', roomListener);
+  roomListener = onValue(roomsRef, (snap) => {
+    const rooms = snap.val() || {};
+    renderRooms(rooms);
+  });
+}
+
+function renderRooms(rooms) {
+  const grid = document.getElementById('rooms-grid');
+  const entries = Object.entries(rooms).filter(([,r]) => r && r.status === 'waiting');
+  if (!entries.length) {
+    grid.innerHTML = '<div style="color:#444;font-size:18px;padding:20px">Нет открытых комнат. Создай первую!</div>';
+    return;
+  }
+  grid.innerHTML = entries.map(([id, room]) => {
+    const mode = MODES[room.mode] || {name: room.mode};
+    const players = Object.keys(room.players || {}).length;
+    const isFull  = players >= (room.maxPlayers || 4);
+    return `<div class="room-card" onclick="${isFull?'':''} joinRoom('${id}')">
+      <div class="room-mode">${mode.name}</div>
+      <div class="room-name">${escHtml(room.name)}</div>
+      <div class="room-players">👥 ${players}/${room.maxPlayers||4} игроков</div>
+      <div class="room-status ${isFull?'full':'waiting'}">${isFull?'ПОЛНАЯ':'ЖДЁТ'}</div>
+    </div>`;
+  }).join('');
+}
+
+window.createRoom = async () => {
+  const name = document.getElementById('room-name-input').value.trim() || `Комната ${userData.name}`;
+  const mode = document.getElementById('room-mode-select').value;
+  const maxP = parseInt(document.getElementById('room-max-players').value);
+
+  const newRoom = {
+    name, mode, maxPlayers: maxP, status: 'waiting',
+    host: currentUser.uid, createdAt: serverTimestamp(),
+    players: {
+      [currentUser.uid]: makePlayerData()
+    }
+  };
+
+  const newRef = await push(ref(db, 'rooms'), newRoom);
+  currentRoom = newRef.key;
+  enterWaitingRoom(currentRoom);
+};
+
+window.joinRoom = async (roomId) => {
+  const snap = await get(ref(db, `rooms/${roomId}`));
+  const room = snap.val();
+  if (!room || room.status !== 'waiting') return showToast('Комната недоступна!');
+  const players = Object.keys(room.players || {}).length;
+  if (players >= room.maxPlayers) return showToast('Комната заполнена!');
+
+  await update(ref(db, `rooms/${roomId}/players/${currentUser.uid}`), makePlayerData());
+  currentRoom = roomId;
+  enterWaitingRoom(roomId);
+};
+
+function makePlayerData() {
+  return {
+    name:  userData.name,
+    skin:  userData.skin  || 0,
+    color: userData.color || 0,
+    ready: false,
+    uid:   currentUser.uid,
+    joinedAt: serverTimestamp()
+  };
+}
+
+// ============================================================
+//  WAITING ROOM
+// ============================================================
+function enterWaitingRoom(roomId) {
+  showScreen('waiting');
+  roomRef = ref(db, `rooms/${roomId}`);
+
+  // Disconnect cleanup
+  onDisconnect(ref(db, `rooms/${roomId}/players/${currentUser.uid}`)).remove();
+
+  onValue(roomRef, (snap) => {
+    const room = snap.val();
+    if (!room) { goLobby(); return; }
+    if (room.status === 'starting') startCountdown(room);
+    if (room.status === 'playing') { startGame(room); return; }
+    renderWaitingRoom(room);
+  });
+}
+
+function renderWaitingRoom(room) {
+  const mode = MODES[room.mode] || {name: room.mode};
+  document.getElementById('waiting-mode-title').textContent = mode.name;
+  document.getElementById('waiting-room-name').textContent  = `Комната: ${room.name}`;
+
+  const players = Object.entries(room.players || {});
+  const maxP    = room.maxPlayers || 4;
+  const list    = document.getElementById('waiting-players-list');
+  let html = players.map(([uid, p]) =>
+    `<div class="waiting-player">
+      <span style="font-size:28px">${SKINS[p.skin||0]}</span>
+      <span style="color:${COLORS[p.color||0]}">${escHtml(p.name)}</span>
+      ${uid === room.host ? '<span style="color:var(--accent);margin-left:auto">👑 ХОСТ</span>' : ''}
+    </div>`
+  ).join('');
+  for (let i = players.length; i < maxP; i++) {
+    html += `<div class="waiting-slot">— ожидание игрока ${i+1} —</div>`;
+  }
+  list.innerHTML = html;
+
+  // Хост может начать при >=2 игроках
+  const cd = document.getElementById('countdown-display');
+  if (currentUser.uid === room.host && players.length >= 2) {
+    cd.innerHTML = `<button class="btn" style="font-size:12px" onclick="hostStartGame()">▶ НАЧАТЬ ИГРУ</button>`;
+  } else if (players.length < 2) {
+    cd.innerHTML = `<span style="color:#555;font-size:18px">Ожидаем игроков...</span>`;
+  } else {
+    cd.innerHTML = `<span style="color:#555;font-size:18px">Ожидаем хоста...</span>`;
+  }
+}
+
+window.hostStartGame = async () => {
+  await update(roomRef, { status: 'starting', startTime: Date.now() + 4000 });
+};
+
+function startCountdown(room) {
+  let count = 3;
+  const cd = document.getElementById('countdown-display');
+  const interval = setInterval(() => {
+    cd.textContent = count;
+    count--;
+    if (count < 0) {
+      clearInterval(interval);
+      update(roomRef, { status: 'playing' });
+    }
+  }, 1000);
+}
+
+window.leaveRoom = async () => {
+  if (!currentRoom) return;
+  await remove(ref(db, `rooms/${currentRoom}/players/${currentUser.uid}`));
+  // Если хост — удалить комнату
+  const snap = await get(ref(db, `rooms/${currentRoom}`));
+  const room = snap.val();
+  if (room && Object.keys(room.players||{}).length === 0) {
+    await remove(ref(db, `rooms/${currentRoom}`));
+  } else if (room && room.host === currentUser.uid) {
+    // передать хоста
+    const newHost = Object.keys(room.players||{})[0];
+    if (newHost) await update(ref(db, `rooms/${currentRoom}`), { host: newHost });
+  }
+  currentRoom = null;
+  roomRef = null;
+  goLobby();
+};
+
+// ============================================================
+//  GAME ENGINE
+// ============================================================
+function startGame(room) {
+  showScreen('game');
+
+  const modeInfo = MODES[room.mode] || { name: room.mode, duration: 120 };
+  document.getElementById('hud-mode').textContent = modeInfo.name;
+
+  // Выбор карты
+  const mapKey = {
+    hide_seek:   'hide_seek_map',
+    boss_battle: 'boss_map',
+    tag:         'tag_map',
+    blindfold:   'blindfold_map',
+    deathmatch:  'deathmatch_map',
+  }[room.mode] || 'hide_seek_map';
+  const map = MAPS[mapKey] || generateDefaultMap(mapKey);
+
+  // Инициализация стейта
+  const players = Object.entries(room.players || {});
+  gameState = {
+    room, map, mode: room.mode,
+    players: {},
+    myId: currentUser.uid,
+    timeLeft: modeInfo.duration,
+    started: Date.now(),
+  };
+
+  // Расставить игроков на спаунах
+  players.forEach(([uid, pdata], idx) => {
+    const spawn = map.spawnPoints[idx % map.spawnPoints.length];
+    gameState.players[uid] = {
+      uid, name: pdata.name, skin: pdata.skin||0, color: pdata.color||0,
+      x: spawn.x * TILE + TILE/2,
+      y: spawn.y * TILE + TILE/2,
+      vx: 0, vy: 0,
+      hp: 3, maxHp: 3,
+      speed: 150,
+      alive: true,
+      hidden: false,  // для пряток
+      isBlind: false,  // для жмурок
+      isBoss: false,
+      isSeeker: false,
+      isIt: false,    // для догонялок
+      score: 0,
+    };
+  });
+
+  // Режим-специфичная инициализация
+  initGameMode(room.mode, gameState);
+
+  // Спавн оружия на карте
+  spawnWeapons(map);
+
+  // Отображение объектива
+  showObjective(modeInfo);
+
+  // Resize canvas
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+
+  // Input
+  setupInput();
+
+  // Firebase синхронизация позиций
+  startPositionSync();
+
+  // Таймер
+  startGameTimer();
+
+  // HUD
+  updateHUD();
+
+  // Game loop
+  lastTime = performance.now();
+  rafId = requestAnimationFrame(gameLoop);
+}
+
+function initGameMode(mode, gs) {
+  const playerIds = Object.keys(gs.players);
+  if (mode === 'hide_seek') {
+    // Один ищет, остальные прячутся
+    const seekerId = playerIds[Math.floor(Math.random() * playerIds.length)];
+    gs.seekerId = seekerId;
+    gs.players[seekerId].isSeeker = true;
+    if (seekerId === gs.myId) {
+      showToast('ТЫ ИЩЕШЬ! Найди всех кур!');
+      showObjectiveBanner('🔍 ТЫ — ИСКАТЕЛЬ');
+    } else {
+      showToast('ПРЯЧЬСЯ! У тебя 10 секунд!');
+      showObjectiveBanner('🙈 СПРЯЧЬСЯ!');
+    }
+  } else if (mode === 'boss_battle') {
+    // Один босс (хост или рандом), остальные куры
+    const bossId = playerIds[0];
+    gs.bossId = bossId;
+    gs.players[bossId].isBoss = true;
+    gs.players[bossId].hp = gs.players[bossId].maxHp = 10;
+    gs.players[bossId].speed = 100;
+    if (bossId === gs.myId) {
+      document.getElementById('boss-indicator').style.display = 'block';
+      showObjectiveBanner('😈 ТЫ — БОСС! Уничтожь кур!');
+    } else {
+      showObjectiveBanner('💪 БЕЙТЕ БОССА!');
+    }
+  } else if (mode === 'tag') {
+    // Один ловит
+    const itId = playerIds[Math.floor(Math.random() * playerIds.length)];
+    gs.itId = itId;
+    gs.players[itId].isIt = true;
+    gs.players[itId].color = 1; // красный
+    if (itId === gs.myId) showObjectiveBanner('🏃 ТЫ ЛОВИШЬ! Догони всех!');
+    else showObjectiveBanner('🏃 УБЕГАЙ!');
+  } else if (mode === 'blindfold') {
+    // Один слепой ищет
+    const blindId = playerIds[Math.floor(Math.random() * playerIds.length)];
+    gs.blindId = blindId;
+    gs.players[blindId].isBlind = true;
+    if (blindId === gs.myId) showObjectiveBanner('😵 ТЫ СЛЕПОЙ! Найди кур на слух!');
+    else showObjectiveBanner('🤫 ТИХО! Слепой ищет...');
+  } else if (mode === 'deathmatch') {
+    showObjectiveBanner('⚔️ ПОСЛЕДНИЙ ВЫЖИВЕТ — ПОБЕДИТЕЛЬ!');
+  }
+}
+
+function resizeCanvas() {
+  canvas.width  = canvas.clientWidth  || window.innerWidth;
+  canvas.height = canvas.clientHeight || (window.innerHeight - 44);
+}
+
+// ============================================================
+//  GAME LOOP
+// ============================================================
+function gameLoop(ts) {
+  const dt = Math.min((ts - lastTime) / 1000, 0.05);
+  lastTime = ts;
+
+  if (!gameState) return;
+
+  updateGame(dt);
+  renderGame();
+  updateHUD();
+
+  rafId = requestAnimationFrame(gameLoop);
+}
+
+function updateGame(dt) {
+  const gs = gameState;
+  const me = gs.players[gs.myId];
+  if (!me || !me.alive) return;
+
+  // Движение
+  let dx = 0, dy = 0;
+  if (keys['ArrowLeft']  || keys['KeyA'] || joystick.dx < -0.3) dx -= 1;
+  if (keys['ArrowRight'] || keys['KeyD'] || joystick.dx >  0.3) dx += 1;
+  if (keys['ArrowUp']    || keys['KeyW'] || joystick.dy < -0.3) dy -= 1;
+  if (keys['ArrowDown']  || keys['KeyS'] || joystick.dy >  0.3) dy += 1;
+
+  // Нормализация диагонали
+  if (dx && dy) { dx *= 0.707; dy *= 0.707; }
+
+  const speed = me.speed * (me.isBlind ? 0.7 : 1);
+  me.vx = dx * speed;
+  me.vy = dy * speed;
+
+  // Коллизии
+  const nx = me.x + me.vx * dt;
+  const ny = me.y + me.vy * dt;
+
+  if (!checkWallCollision(nx, me.y, gs.map)) me.x = nx;
+  if (!checkWallCollision(me.x, ny, gs.map)) me.y = ny;
+
+  // Границы
+  const mapW = gs.map.width  * TILE;
+  const mapH = gs.map.height * TILE;
+  me.x = Math.max(16, Math.min(mapW - 16, me.x));
+  me.y = Math.max(16, Math.min(mapH - 16, me.y));
+
+  // Обновить пули
+  updateBullets(dt, gs);
+
+  // Частицы
+  particles = particles.filter(p => {
+    p.life -= dt;
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+    return p.life > 0;
+  });
+
+  // Нож анимация
+  if (knifeAnim < 1) knifeAnim = Math.min(1, knifeAnim + dt * 6);
+
+  // Подбор оружия
+  updateWeaponPickups(gs);
+
+  // Авто-огонь (калаш)
+  const me2 = gs.players[gs.myId];
+  if (me2 && me2.weapon && WEAPONS[me2.weapon]?.auto) {
+    if (keys['Space'] || keys['KeyF'] || joystick.active) shoot();
+  }
+
+  // Режим-специфика
+  updateModeLogic(dt, gs);
+}
+
+function checkWallCollision(px, py, map) {
+  const r = 12;
+  const checks = [[px-r, py-r],[px+r, py-r],[px-r, py+r],[px+r, py+r]];
+  for (const [cx, cy] of checks) {
+    const tx = Math.floor(cx / TILE);
+    const ty = Math.floor(cy / TILE);
+    if (ty < 0 || ty >= map.tiles.length) return true;
+    if (tx < 0 || tx >= map.tiles[0].length) return true;
+    if (map.tiles[ty][tx] === 1) return true;
+  }
+  return false;
+}
+
+function updateBullets(dt, gs) {
+  bullets = bullets.filter(b => {
+    b.x += b.vx * dt;
+    b.y += b.vy * dt;
+    b.life -= dt;
+    if (b.life <= 0) return false;
+    if (checkWallCollision(b.x, b.y, gs.map)) {
+      spawnParticles(b.x, b.y, '#f6c90e', 4);
+      return false;
+    }
+    // Попадание в игроков
+    for (const [uid, p] of Object.entries(gs.players)) {
+      if (uid === b.ownerId || !p.alive) continue;
+      const dx = p.x - b.x, dy = p.y - b.y;
+      if (Math.sqrt(dx*dx+dy*dy) < 18) {
+        hitPlayer(uid, b.ownerId, gs);
+        spawnParticles(b.x, b.y, COLORS[p.color||0], 8);
+        return false;
+      }
+    }
+    return true;
+  });
+}
+
+function hitPlayer(victimId, attackerId, gs) {
+  const victim = gs.players[victimId];
+  if (!victim || !victim.alive) return;
+
+  // Только хозяин может обрабатывать урон по себе
+  if (victimId !== gs.myId) return;
+
+  victim.hp--;
+  shakeCameraEffect();
+
+  if (victim.hp <= 0) {
+    victim.alive = false;
+    victim.hp = 0;
+    showToast('💀 Ты убит!');
+    checkWinCondition(gs);
+    // Синхронизация смерти
+    if (roomRef) update(ref(db, `rooms/${currentRoom}/players/${victimId}`), { alive: false, hp: 0 });
+  }
+}
+
+function updateModeLogic(dt, gs) {
+  const me = gs.players[gs.myId];
+
+  if (gs.mode === 'tag') {
+    // Водящий касается кого-то
+    if (me.isIt) {
+      for (const [uid, p] of Object.entries(gs.players)) {
+        if (uid === gs.myId || !p.alive) continue;
+        const dx = me.x - p.x, dy = me.y - p.y;
+        if (Math.sqrt(dx*dx+dy*dy) < 28) {
+          // Передать "водилу"
+          me.isIt = false;
+          p.isIt  = true;
+          gs.itId = uid;
+          showToast(`🏃 Теперь водит ${p.name}!`);
+          if (roomRef) update(ref(db, `rooms/${currentRoom}`), { itId: uid });
+        }
+      }
+    }
+  }
+
+  if (gs.mode === 'hide_seek') {
+    if (me.isSeeker) {
+      for (const [uid, p] of Object.entries(gs.players)) {
+        if (uid === gs.myId || !p.alive || p.hidden) continue;
+        const dx = me.x - p.x, dy = me.y - p.y;
+        if (Math.sqrt(dx*dx+dy*dy) < 28) {
+          p.alive = false;
+          showToast(`🔍 Нашёл ${p.name}!`);
+          spawnParticles(p.x, p.y, '#f6c90e', 12);
+          if (roomRef) update(ref(db, `rooms/${currentRoom}/players/${uid}`), { alive: false });
+          checkWinCondition(gs);
+        }
+      }
+    }
+  }
+}
+
+let cameraShake = 0;
+function shakeCameraEffect() { cameraShake = 0.3; }
+
+function checkWinCondition(gs) {
+  const alivePlayers = Object.values(gs.players).filter(p => p.alive);
+  if (gs.mode === 'deathmatch' && alivePlayers.length <= 1) {
+    endGame(gs, alivePlayers[0]);
+  }
+  if (gs.mode === 'boss_battle') {
+    const boss = gs.players[gs.bossId];
+    if (!boss || !boss.alive) endGame(gs, null);
+    const chickenAlive = Object.values(gs.players).filter(p => !p.isBoss && p.alive);
+    if (!chickenAlive.length) endGame(gs, boss);
+  }
+}
+
+function endGame(gs, winner) {
+  stopGame();
+  showScreen('result');
+  const me = gs.players[gs.myId];
+  const isWinner = winner && winner.uid === gs.myId;
+  const reward   = isWinner ? 100 : 20;
+
+  document.getElementById('result-title').textContent   = isWinner ? '🏆 ПОБЕДА!' : '💀 ПОРАЖЕНИЕ';
+  document.getElementById('result-subtitle').textContent= MODES[gs.mode]?.name || gs.mode;
+  document.getElementById('result-reward').textContent  = reward;
+
+  const resultList = document.getElementById('result-players');
+  resultList.innerHTML = Object.values(gs.players).map(p =>
+    `<div class="result-player ${p.uid===winner?.uid?'winner':''}">
+      <span class="rank">${p.uid===winner?.uid?'🏆':'💀'}</span>
+      <span>${SKINS[p.skin||0]} ${escHtml(p.name)}</span>
+      <span class="result-reward">+${p.uid===winner?.uid?100:20} 🪙</span>
+    </div>`
+  ).join('');
+
+  // Начислить монеты
+  update(ref(db, `users/${currentUser.uid}`), {
+    coins: (userData.coins || 0) + reward,
+    gamesPlayed: (userData.gamesPlayed || 0) + 1,
+    wins: (userData.wins || 0) + (isWinner ? 1 : 0)
+  });
+
+  // Очистить комнату
+  if (currentUser.uid === gs.room.host) {
+    remove(ref(db, `rooms/${currentRoom}`));
+  }
+  currentRoom = null;
+}
+
+function stopGame() {
+  if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+  if (gameTimer) { clearInterval(gameTimer); gameTimer = null; }
+  document.getElementById('boss-indicator').style.display = 'none';
+  window.removeEventListener('resize', resizeCanvas);
+  removeInput();
+  stopPositionSync();
+  gameState = null;
+  bullets   = [];
+  particles = [];
+}
+
+// ============================================================
+//  RENDER
+// ============================================================
+function renderGame() {
+  const gs = gameState;
+  if (!gs) return;
+
+  const W = canvas.width, H = canvas.height;
+  const me = gs.players[gs.myId];
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Camera
+  let camX = (me ? me.x : 0) - W / 2;
+  let camY = (me ? me.y : 0) - H / 2;
+  if (cameraShake > 0) {
+    camX += (Math.random() - 0.5) * 8 * cameraShake;
+    camY += (Math.random() - 0.5) * 8 * cameraShake;
+    cameraShake = Math.max(0, cameraShake - 0.05);
+  }
+  // Clamp camera
+  const mapW = gs.map.width * TILE, mapH = gs.map.height * TILE;
+  camX = Math.max(0, Math.min(mapW - W, camX));
+  camY = Math.max(0, Math.min(mapH - H, camY));
+
+  ctx.save();
+  ctx.translate(-camX, -camY);
+
+  // Draw map
+  drawMap(gs.map, camX, camY, W, H);
+
+  // Blind mode: fog of war
+  if (gs.mode === 'blindfold' && me && me.isBlind) {
+    drawFogOfWar(me.x, me.y, camX, camY, W, H, 80);
+  }
+
+  // Draw particles
+  for (const p of particles) {
+    ctx.globalAlpha = p.life / p.maxLife;
+    ctx.fillStyle   = p.color;
+    ctx.fillRect(p.x - 3, p.y - 3, 6, 6);
+    ctx.globalAlpha = 1;
+  }
+
+  // Draw bullets
+  for (const b of bullets) {
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, 4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Draw players
+  for (const [uid, p] of Object.entries(gs.players)) {
+    if (!p.alive) continue;
+    // Hide seekers can't see hidden players
+    if (gs.mode === 'hide_seek' && p.hidden && uid !== gs.myId) continue;
+
+    const isMe = uid === gs.myId;
+    const col  = COLORS[p.color || 0];
+    const skin  = SKINS[p.skin  || 0];
+
+    ctx.save();
+    ctx.translate(p.x, p.y);
+
+    // Тень
+    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+    ctx.beginPath();
+    ctx.ellipse(0, 14, 14, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Спрайт курицы
+    const skinKey = p.isBoss ? 'chicken_boss' : (CHICKEN_SKINS[p.skin||0]?.file || 'chicken_normal');
+    const alpha   = p.hidden ? 0.35 : 1;
+
+    if (TEX[skinKey]) {
+      ctx.globalAlpha = alpha;
+      // Мигание при получении урона
+      if (p.damageFlash > 0) {
+        ctx.filter = 'brightness(3)';
+      }
+      ctx.drawImage(TEX[skinKey], -16, -16, 32, 32);
+      ctx.filter = 'none';
+      ctx.globalAlpha = 1;
+    } else {
+      // Fallback — цветной круг
+      ctx.fillStyle   = COLORS[p.color||0];
+      ctx.strokeStyle = isMe ? '#fff' : '#000';
+      ctx.lineWidth   = isMe ? 3 : 1;
+      ctx.globalAlpha = alpha;
+      ctx.beginPath();
+      ctx.arc(0, 0, 14, 0, Math.PI * 2);
+      ctx.fill(); ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+
+    // Выделение своего игрока
+    if (isMe) {
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth   = 2;
+      ctx.setLineDash([4, 3]);
+      ctx.beginPath();
+      ctx.arc(0, 0, 18, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    // Оружие в руках
+    if (p.weapon && WEAPONS[p.weapon]) {
+      const w = WEAPONS[p.weapon];
+      ctx.save();
+      ctx.rotate(p.aimAngle || 0);
+      let wOffset = 14;
+      if (w.melee && p.attacking) {
+        wOffset = 14 + knifeAnim * 12; // анимация ножа
+      }
+      if (TEX[w.img]) {
+        ctx.drawImage(TEX[w.img], wOffset, -6, 20, 12);
+      } else {
+        ctx.fillStyle = '#aaa';
+        ctx.fillRect(wOffset, -3, 16, 6);
+      }
+      ctx.restore();
+    }
+
+    // Иконки статуса
+    ctx.font = '14px serif';
+    ctx.textAlign = 'center';
+    if (p.isBoss)   ctx.fillText('😈', 0, -22);
+    if (p.isIt)     ctx.fillText('🏃', 0, -22);
+    if (p.isSeeker) ctx.fillText('🔍', 0, -22);
+    if (p.hidden)   ctx.fillText('👻', 0, -22);
+
+    // Имя
+    ctx.font = '14px "Press Start 2P", monospace';
+    ctx.fillStyle   = '#fff';
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth   = 3;
+    ctx.strokeText(p.name, 0, -26);
+    ctx.fillStyle = isMe ? '#f6c90e' : '#fff';
+    ctx.fillText(p.name, 0, -26);
+
+    // HP — сердечки
+    const hpY = -38;
+    for (let i = 0; i < p.maxHp; i++) {
+      if (TEX['heart']) {
+        ctx.globalAlpha = i < p.hp ? 1 : 0.25;
+        ctx.drawImage(TEX['heart'], -p.maxHp*8/2 + i*10, hpY, 9, 9);
+        ctx.globalAlpha = 1;
+      } else {
+        ctx.fillStyle = i < p.hp ? '#f87171' : '#333';
+        ctx.fillRect(-p.maxHp*6/2 + i*8, hpY, 6, 6);
+      }
+    }
+
+    ctx.restore();
+  }
+
+  ctx.restore();
+}
+
+function drawMap(map, camX, camY, W, H) {
+  const startX = Math.max(0, Math.floor(camX / TILE));
+  const startY = Math.max(0, Math.floor(camY / TILE));
+  const endX   = Math.min(map.width,  Math.ceil((camX + W) / TILE));
+  const endY   = Math.min(map.height, Math.ceil((camY + H) / TILE));
+
+  // Фон (небо/трава под всей картой)
+  if (TEX['sky_day']) {
+    ctx.drawImage(TEX['sky_day'], camX, camY, W, H);
+  } else {
+    ctx.fillStyle = '#1a2a1a';
+    ctx.fillRect(camX, camY, W, H);
+  }
+
+  for (let y = startY; y < endY; y++) {
+    for (let x = startX; x < endX; x++) {
+      const tile = map.tiles[y]?.[x];
+      const px   = x * TILE;
+      const py   = y * TILE;
+
+      if (tile === 1) {
+        // Стена
+        if (TEX['wall']) {
+          ctx.drawImage(TEX['wall'], px, py, TILE, TILE);
+        } else {
+          ctx.fillStyle = '#2a2a4a';
+          ctx.fillRect(px, py, TILE, TILE);
+          ctx.fillStyle = '#3a3a6a';
+          ctx.fillRect(px+1, py+1, TILE-2, 4);
+        }
+      } else if (tile === 2) {
+        // Вода
+        if (TEX['water']) ctx.drawImage(TEX['water'], px, py, TILE, TILE);
+        else { ctx.fillStyle = '#1e90ff'; ctx.fillRect(px, py, TILE, TILE); }
+      } else if (tile === 3) {
+        // Куст (проходимый, укрытие)
+        if (TEX['grass']) ctx.drawImage(TEX['grass'], px, py, TILE, TILE);
+        if (TEX['bush'])  ctx.drawImage(TEX['bush'],  px, py, TILE, TILE);
+        else { ctx.fillStyle = '#2d5a1b'; ctx.fillRect(px, py, TILE, TILE); }
+      } else if (tile === 4) {
+        // Дерево (коллизия как стена)
+        if (TEX['grass']) ctx.drawImage(TEX['grass'], px, py, TILE, TILE);
+        if (TEX['oak'])   ctx.drawImage(TEX['oak'],   px, py, TILE, TILE);
+        else { ctx.fillStyle = '#4a2a0a'; ctx.fillRect(px, py, TILE, TILE); }
+      } else {
+        // Трава (пол)
+        if (TEX['grass']) {
+          ctx.drawImage(TEX['grass'], px, py, TILE, TILE);
+        } else {
+          const shade = (x + y) % 2 === 0 ? '#2d5a1b' : '#275218';
+          ctx.fillStyle = shade;
+          ctx.fillRect(px, py, TILE, TILE);
+        }
+      }
+    }
+  }
+
+  // Оружие на карте
+  drawWeaponPickups();
+}
+
+function drawFogOfWar(px, py, camX, camY, W, H, radius) {
+  // Тёмный overlay с кругом видимости
+  const grd = ctx.createRadialGradient(px, py, radius * 0.5, px, py, radius);
+  grd.addColorStop(0, 'rgba(0,0,0,0)');
+  grd.addColorStop(1, 'rgba(0,0,0,0.97)');
+
+  ctx.fillStyle = 'rgba(0,0,0,0.97)';
+  ctx.fillRect(camX, camY, W, H);
+  ctx.globalCompositeOperation = 'destination-out';
+  ctx.fillStyle = grd;
+  ctx.beginPath();
+  ctx.arc(px, py, radius, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalCompositeOperation = 'source-over';
+}
+
+function spawnParticles(x, y, color, count) {
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 50 + Math.random() * 100;
+    particles.push({
+      x, y, color,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      life: 0.4 + Math.random() * 0.4,
+      maxLife: 0.8
+    });
+  }
+}
+
+// ============================================================
+//  HUD
+// ============================================================
+function updateHUD() {
+  if (!gameState) return;
+  const gs = gameState;
+  const hudPlayers = document.getElementById('hud-players');
+
+  const me = gs.players[gs.myId];
+  hudPlayers.innerHTML = Object.values(gs.players).map(p => {
+    let dots = '';
+    for (let i = 0; i < p.maxHp; i++) {
+      dots += `<div class="hp-dot ${i < p.hp ? '' : 'empty'}"></div>`;
+    }
+    const wName = p.weapon ? WEAPONS[p.weapon]?.name : '—';
+    return `<div class="hud-player">
+      <span style="color:${p.uid===gs.myId?'#f6c90e':'#fff'}">${escHtml(p.name)}</span>
+      <div class="hud-hp">${dots}</div>
+      <span style="color:#aaa;font-size:14px">${wName}</span>
+    </div>`;
+  }).join('');
+}
+
+function startGameTimer() {
+  const gs = gameState;
+  if (!gs) return;
+  gameTimer = setInterval(() => {
+    if (!gameState) { clearInterval(gameTimer); return; }
+    gameState.timeLeft--;
+    const m = Math.floor(gameState.timeLeft / 60);
+    const s = gameState.timeLeft % 60;
+    document.getElementById('hud-timer').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+    if (gameState.timeLeft <= 0) {
+      clearInterval(gameTimer);
+      endGame(gameState, determineWinner(gameState));
+    }
+  }, 1000);
+}
+
+function determineWinner(gs) {
+  const alive = Object.values(gs.players).filter(p => p.alive);
+  if (alive.length === 1) return alive[0];
+  return alive.sort((a,b) => b.score - a.score)[0] || null;
+}
+
+// ============================================================
+//  INPUT
+// ============================================================
+function setupInput() {
+  document.addEventListener('keydown', onKeyDown);
+  document.addEventListener('keyup',   onKeyUp);
+  canvas.addEventListener('click',     onCanvasClick);
+  canvas.addEventListener('mousemove', onMouseMove);
+  setupJoystick();
+}
+
+function removeInput() {
+  document.removeEventListener('keydown', onKeyDown);
+  document.removeEventListener('keyup',   onKeyUp);
+  if (canvas) {
+    canvas.removeEventListener('click',     onCanvasClick);
+    canvas.removeEventListener('mousemove', onMouseMove);
+  }
+}
+
+function onKeyDown(e) {
+  keys[e.code] = true;
+  if (e.code === 'Enter') toggleChat();
+  if (e.code === 'Space' || e.code === 'KeyF') playerAction();
+  e.preventDefault?.();
+}
+
+function onKeyUp(e) { keys[e.code] = false; }
+
+let mouseAngle = 0;
+function onMouseMove(e) {
+  if (!gameState) return;
+  const gs = gameState;
+  const me = gs.players[gs.myId];
+  if (!me) return;
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  // World coords
+  const camX = me.x - canvas.width / 2;
+  const camY = me.y - canvas.height / 2;
+  mouseAngle = Math.atan2(my + camY - me.y, mx + camX - me.x);
+}
+
+function onCanvasClick(e) { shoot(); }
+
+window.mobileAction = () => playerAction();
+
+function playerAction() {
+  const gs = gameState;
+  if (!gs) return;
+  const me = gs.players[gs.myId];
+  if (!me || !me.alive) return;
+
+  if (gs.mode === 'hide_seek' && !me.isSeeker) {
+    me.hidden = !me.hidden;
+    showToast(me.hidden ? '🙈 Ты спрятался!' : '👀 Ты вышел из укрытия!');
+  } else if (me.weapon) {
+    shoot();
+  } else {
+    showToast('Подбери оружие!');
+  }
+}
+
+function shoot() {
+  const gs = gameState;
+  if (!gs) return;
+  const me = gs.players[gs.myId];
+  if (!me || !me.alive) return;
+  if (!me.weapon) return;
+
+  const w = WEAPONS[me.weapon];
+  if (!w) return;
+
+  // Кулдаун
+  const now = performance.now() / 1000;
+  if ((me.lastShot || 0) + w.cooldown > now) return;
+  me.lastShot = now;
+  me.aimAngle = mouseAngle;
+
+  if (w.melee) {
+    // Нож — ближний бой, анимация
+    me.attacking = true;
+    knifeAnim = 0;
+    setTimeout(() => { me.attacking = false; }, 300);
+    // Проверка попадания по всем рядом
+    for (const [uid, p] of Object.entries(gs.players)) {
+      if (uid === gs.myId || !p.alive) continue;
+      const dx = p.x - me.x, dy = p.y - me.y;
+      if (Math.sqrt(dx*dx+dy*dy) < w.range) {
+        hitPlayer(uid, gs.myId, gs);
+        spawnParticles(p.x, p.y, '#f87171', 6);
+      }
+    }
+  } else {
+    // Огнестрел
+    const spread = (Math.random() - 0.5) * w.spread;
+    const angle  = mouseAngle + spread;
+    bullets.push({
+      x: me.x, y: me.y,
+      vx: Math.cos(angle) * w.bulletSpeed,
+      vy: Math.sin(angle) * w.bulletSpeed,
+      ownerId: gs.myId,
+      weapon: me.weapon,
+      damage: w.damage,
+      life: w.range / w.bulletSpeed,
+    });
+    spawnParticles(me.x, me.y, '#f6c90e', 2);
+  }
+}
+
+// ============================================================
+//  JOYSTICK (мобильный)
+// ============================================================
+const joystick = { dx: 0, dy: 0, active: false };
+
+function setupJoystick() {
+  const zone  = document.getElementById('joystick-zone');
+  const thumb = document.getElementById('joystick-thumb');
+  if (!zone) return;
+
+  const radius = 35;
+  let startX = 0, startY = 0;
+
+  zone.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    const t = e.touches[0];
+    const r = zone.getBoundingClientRect();
+    startX = r.left + r.width / 2;
+    startY = r.top  + r.height / 2;
+    joystick.active = true;
+  }, { passive: false });
+
+  zone.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    if (!joystick.active) return;
+    const t = e.touches[0];
+    let dx = t.clientX - startX;
+    let dy = t.clientY - startY;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    if (dist > radius) { dx = dx/dist*radius; dy = dy/dist*radius; }
+    joystick.dx = dx / radius;
+    joystick.dy = dy / radius;
+    thumb.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+  }, { passive: false });
+
+  zone.addEventListener('touchend', () => {
+    joystick.dx = 0; joystick.dy = 0; joystick.active = false;
+    thumb.style.transform = 'translate(-50%, -50%)';
+  });
+}
+
+// ============================================================
+//  CHAT
+// ============================================================
+window.toggleChat = () => {
+  const box = document.getElementById('chat-box');
+  box.classList.toggle('open');
+  if (box.classList.contains('open')) document.getElementById('chat-input').focus();
+};
+
+window.sendChatKey = (e) => {
+  if (e.key === 'Enter') {
+    const input = document.getElementById('chat-input');
+    const msg   = input.value.trim();
+    if (msg && currentRoom && roomRef) {
+      push(ref(db, `rooms/${currentRoom}/chat`), {
+        name: userData.name, text: msg, ts: serverTimestamp()
+      });
+    }
+    input.value = '';
+    toggleChat();
+  }
+};
+
+function listenChat(roomId) {
+  const chatRef = ref(db, `rooms/${roomId}/chat`);
+  onValue(chatRef, (snap) => {
+    const msgs = snap.val() || {};
+    const box  = document.getElementById('chat-messages');
+    box.innerHTML = Object.values(msgs).slice(-30).map(m =>
+      `<div><span style="color:var(--accent)">${escHtml(m.name)}:</span> ${escHtml(m.text)}</div>`
+    ).join('');
+    box.scrollTop = box.scrollHeight;
+  });
+}
+
+// ============================================================
+//  POSITION SYNC (Firebase)
+// ============================================================
+let positionSyncInterval = null;
+
+function startPositionSync() {
+  if (!currentRoom || !gameState) return;
+  // Слушать позиции других игроков
+  const posRef = ref(db, `rooms/${currentRoom}/positions`);
+  onValue(posRef, (snap) => {
+    const positions = snap.val() || {};
+    if (!gameState) return;
+    for (const [uid, pos] of Object.entries(positions)) {
+      if (uid === gameState.myId) continue;
+      const p = gameState.players[uid];
+      if (p) {
+        p.x = pos.x;
+        p.y = pos.y;
+        p.alive = pos.alive !== false;
+        p.hp    = pos.hp ?? p.hp;
+        if (pos.isIt  !== undefined) p.isIt  = pos.isIt;
+        if (pos.hidden !== undefined) p.hidden = pos.hidden;
+      }
+    }
+  });
+
+  // Отправлять свою позицию 20 раз в секунду
+  positionSyncInterval = setInterval(() => {
+    if (!gameState || !currentRoom) return;
+    const me = gameState.players[gameState.myId];
+    if (!me) return;
+    update(ref(db, `rooms/${currentRoom}/positions/${gameState.myId}`), {
+      x: Math.round(me.x), y: Math.round(me.y),
+      alive: me.alive, hp: me.hp,
+      isIt: me.isIt ?? false,
+      hidden: me.hidden ?? false,
+    });
+  }, 50);
+}
+
+function stopPositionSync() {
+  if (positionSyncInterval) { clearInterval(positionSyncInterval); positionSyncInterval = null; }
+  if (currentRoom) {
+    const posRef = ref(db, `rooms/${currentRoom}/positions`);
+    off(posRef);
+  }
+}
+
+// ============================================================
+//  UI UTILS
+// ============================================================
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const screenMap = { auth: 'auth-screen', lobby: 'lobby-screen', waiting: 'waiting-screen',
+                      game: 'game-screen', result: 'result-screen' };
+  const el = document.getElementById(screenMap[name]);
+  if (el) el.classList.add('active');
+}
+
+function showToast(msg, dur = 2500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), dur);
+}
+
+function showObjectiveBanner(msg) {
+  const b = document.getElementById('objective-banner');
+  b.style.display = 'block';
+  b.textContent   = msg;
+  setTimeout(() => b.style.display = 'none', 4000);
+}
+
+function showObjective(modeInfo) {
+  setTimeout(() => showObjectiveBanner(modeInfo.desc || ''), 500);
+}
+
+window.goLobby = async () => {
+  stopGame();
+  if (currentRoom) {
+    await remove(ref(db, `rooms/${currentRoom}/players/${currentUser.uid}`));
+    currentRoom = null;
+  }
+  // Перезагрузить данные пользователя
+  const snap = await get(ref(db, `users/${currentUser.uid}`));
+  userData = snap.val();
+  showScreen('lobby');
+  setupLobby();
+};
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ============================================================
+//  INPUT: Enter to start chatting, etc.
+// ============================================================
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Escape') {
+    const chat = document.getElementById('chat-box');
+    if (chat.classList.contains('open')) chat.classList.remove('open');
+  }
+});
+</script>
+</body>
+</html>
